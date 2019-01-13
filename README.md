@@ -1,6 +1,6 @@
 # Linux Bridge Demonstration
 
-This project demonstrates a linux box working as a Layer 2 network switch (or so-called `linux bridge`); the whole demonstration runs under Vagrant/VirtualBox.
+This project demonstrates a linux box working as a Layer 2 network switch (or so-called "linux bridge"); the whole demonstration runs under Vagrant/VirtualBox.
 
 To demonstrate a working switch (bridge), this project defines an environment with three virtual hosts running under VirtualBox:
 
@@ -12,6 +12,7 @@ Note that all three hosts have an eth0 network interface. This is the NAT bridge
 
 A diagram of the modeled network:
 
+~~~
           +----+
           |    |                                  +----+
      eth0 |    | eth1                        eth1 |    |
@@ -27,23 +28,28 @@ VBox host |    |                                  |    |
    NAT to |    | 192.168.60.11/24                 |    |
 VBox host |    |                                  +----+
           +----+
+~~~
 
 ## Quick Start
 
-`vagrant up`
-`vagrant ssh b0`
-`tcpdump -i eth1`
+```
+vagrant up
+vagrant ssh b0
+tcpdump -i eth1
+```
 
 ...and then in a second terminal...
 
-`vagrant ssh h0`
-`ping 192.168.60.11`
+```
+vagrant ssh h0
+ping 192.168.60.11
+```
 
-You should see successful pings of h1 from h0, and observe ARP and ICMP packets exchanged on the b0 switch.
+You should see successful pings of h1 from h0, and observe ARP and ICMP packets traversing the b0 switch.
 
 ## Implementation Notes
 
-When defining the networking in Vagrant, we specify dummy IP addresses for b0:eth1 (192.168.60.9/24) and b0:eth2 (192.168.61.9/24) in the `mybox.vm.network` statements.
+When defining the networking in Vagrant, we specify dummy IP addresses for b0:eth1 (192.168.60.9/24) and b0:eth2 (192.168.61.9/24) in `mybox.vm.network` statements.
 This causes Vagrant/VirtualBox to create two separate and distinct virtual networks for these interfaces.
 If you look b0's VirtualBox network settings, you'll see that Adapter 2 is assigned to vboxnetX, and Adapter 3 is assigned to vboxnetY, where X != Y.
 
@@ -53,8 +59,11 @@ Since this is in the same network address space as 192.168.60.9/24, Vagrant help
 Similarly, h1's eth1 is assigned a dummy IP address of 192.168.61.11/24.
 Since this is in the same network address space as 192.168.61.9/24, Vagrant helpfully assigned h1:eth1 to the same vboxnetY as b0:eth2.
 
+We never actually use IP addresses in the 192.168.61.0/24 address space; the above is done to compel Vagrant/VirtualBox to keep vboxnetX and vboxnetY separate and distinct.
+
 A more complete network diagram is thus:
 
+~~~
           +----+
           |    |                      +----------+                +----+
      eth0 |    | eth1                 |          |           eth1 |    |
@@ -70,9 +79,10 @@ VBox host |    |                      +----------+                |    |
    NAT to |    | 192.168.60.11/24     |          |                |    |
 VBox host |    |                      +----------+                +----+
           +----+
+~~~
 
 Note that all of the Vagrant driven `mybox.vm.network` statements specify the `auto_config: false` option, so none of these IP addresses are actually set up by Vagrant or VirtualBox.
-The actually configuration of the network interfaces is done in the in-line provisioning scripts (`mybox.vm.provision` statements).
+The actual configuration of the network interfaces is done in the in-line provisioning scripts (`mybox.vm.provision` statements).
 In these scripts we prefer iproute2 commands over the older utilities such as `ifconfig`; comments for h0's setup show equivalent commands.
 
 It is important to tell Network Manager to ignore all ethN devices before configuring them explicitly; otherwise Network Manager tries to "help".
@@ -80,11 +90,11 @@ It is important to tell Network Manager to ignore all ethN devices before config
 Linux bridging requires that the NICs that are part of the 'switch' be put in promiscuous mode. This means that they will accept inbound L2 frames with MAC address that are not their own.
 To achieve this, we need to both tell VirtualBox to allow this (`vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]`), and then to actually put the NICs into promiscuous mode (`ip link set eth1 promisc on`).
 
-b0:eth0 and b0:eth1 don't have their own IP addresses. This is ensured with the `ip address flush` commands.
+b0:eth1 and b0:eth2 don't have their own IP addresses. This is ensured with the `ip address flush` commands.
 
 The network configuration scripts used here are not idempotent, and do not persist configuration across reboots.
 They are written for maximum clarity, and not intended for production use.
 
 ## Resources
 
-Martin Brown's [http://linux-ip.net/html/index.html Guide to IP Layer Network Administration with Linux] was very helpful in preparing this demonstration project.
+Martin Brown's [Guide to IP Layer Network Administration with Linux](http://linux-ip.net/html/index.html) was very helpful in preparing this demonstration project.
