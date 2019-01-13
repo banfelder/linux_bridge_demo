@@ -8,7 +8,7 @@ To demonstrate a working switch (bridge), this project defines an environment wi
 2. h1: a bare host with IP address 192.168.60.11/24 running on eth1
 3. b0: a host running linux bridge (i.e. acting as an L2 switch) that will allow h0 to ping h1. This switch has two network ports, eth1 and eth2. As it is just a switch, these ports don't have IP addresses assigned to them.
 
-Note that all three hosts have an eth0 network interface. This is the NAT bridge that VirtualBox requires, and that you use to ssh from your VirtualBox host into each of the guest boxes. None of the eth0 interfaces are relevant to the demonstration of bridging.
+Note that all three hosts have an eth0 network interface. This is the NAT bridge that Vagrant requires, and that you use to ssh from your VirtualBox host into each of the guest boxes. None of the eth0 interfaces are relevant to the demonstration of bridging.
 
 A diagram of the modeled network:
 
@@ -87,7 +87,7 @@ In these scripts we prefer iproute2 commands over the older utilities such as `i
 
 It is important to tell Network Manager to ignore all ethN devices before configuring them explicitly; otherwise Network Manager tries to "help".
 
-Linux bridging requires that the NICs that are part of the 'switch' be put in promiscuous mode. This means that they will accept inbound L2 frames with MAC address that are not their own.
+Linux bridging requires that the NICs that are part of the 'switch' be put in promiscuous mode. This means that they will accept inbound L2 frames with MAC addresses that are not their own.
 To achieve this, we need to both tell VirtualBox to allow this (`vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]`), and then to actually put the NICs into promiscuous mode (`ip link set eth1 promisc on`).
 
 b0:eth1 and b0:eth2 don't have their own IP addresses. This is ensured with the `ip address flush` commands.
