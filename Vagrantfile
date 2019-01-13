@@ -27,7 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                      auto_config: false
     mybox.vm.provision "h0-nic", type: "shell" do |p|
       p.inline = <<-SCRIPT
-        yum install -y tcpdump
+        yum install -y tcpdump net-tools
         nmcli dev set eth1 managed no
         ip link set eth1 down                                # ifconfig eth1 down
         ip address add 192.168.60.10/24 broadcast + dev eth1 # ifconfig eth1 192.168.60.10 netmask 255.255.255.0
@@ -46,7 +46,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                      auto_config: false
     mybox.vm.provision "h1-nic", type: "shell" do |p|
       p.inline = <<-SCRIPT
-        yum install -y tcpdump
+        yum install -y tcpdump net-tools
         nmcli dev set eth1 managed no
         ip link set eth1 down
         ip address add 192.168.60.11/24 broadcast + dev eth1
@@ -65,7 +65,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
     mybox.vm.provision "b0-bridge", type: "shell" do |p|
       p.inline = <<-SCRIPT
-        yum install -y bridge-utils tcpdump
+        yum install -y bridge-utils tcpdump net-tools
         nmcli dev set eth1 managed no
         ip link set eth1 down
         ip address flush dev eth1
